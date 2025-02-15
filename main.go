@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 func fetchHTML() (string, error) {
@@ -18,8 +19,23 @@ func fetchHTML() (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("レスポンス読み取りエラー: %w", err)
 	}
+	bodyStr := string(body)
+	startMarker := "window.__PRELOADED_STATE__ = "
+	endMarker := "</script>"
 
-	return string(body), nil
+	startIndex := strings.Index(bodyStr, startMarker)
+	if startIndex == -1 {
+			return "", fmt.Errorf("開始マーカーが見つかりません")
+	}
+	startIndex += len(startMarker)
+
+	endIndex := strings.Index(bodyStr[startIndex:], endMarker)
+	if endIndex == -1 {
+			return "", fmt.Errorf("終了マーカーが見つかりません")
+	}
+
+	jsonData := bodyStr[startIndex : startIndex+endIndex]
+	return jsonData, nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
