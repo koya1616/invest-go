@@ -6,7 +6,6 @@ import (
 	_ "github.com/lib/pq"
 	"net/http"
 	"os"
-	"time"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
