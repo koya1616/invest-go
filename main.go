@@ -11,15 +11,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handler)
+	defer db.Close()
 
-	database, err := db.NewDB()
-	if err != nil {
-		panic(err)
-	}
-	defer database.Close()
-
-	ts, err := database.GetTimeSeriesById(1)
+	ts, err := db.Instance.GetTimeSeriesById(1)
 	if err != nil {
 		panic(err)
 	}
@@ -30,6 +24,7 @@ func main() {
 
 	fmt.Printf("ID: %d, Code: %s\n", ts.ID, ts.Code)
 
+	http.HandleFunc("/", handler)
 	fmt.Println("Server starting on port http://localhost:7778")
 	if err := http.ListenAndServe(":7778", nil); err != nil {
 		fmt.Printf("Server error: %v\n", err)

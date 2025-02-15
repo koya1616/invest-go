@@ -4,28 +4,34 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	"log"
 	"os"
 )
+
+var Instance *DB
 
 type DB struct {
 	*sql.DB
 }
 
-func NewDB() (*DB, error) {
+func init() {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
-		return nil, fmt.Errorf("error opening database: %v", err)
+		log.Fatalf("error opening database: %v", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("error connecting to the database: %v", err)
+		log.Fatalf("error connecting to the database: %v", err)
 	}
 
-	return &DB{db}, nil
+	Instance = &DB{db}
 }
 
-func (db *DB) Close() error {
-	return db.DB.Close()
+func Close() error {
+	if Instance != nil {
+		return Instance.DB.Close()
+	}
+	return nil
 }
 
 type TimeSeries struct {
