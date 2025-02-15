@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile.dev
     platform: linux/amd64
     container_name: app
+    environment:
+      - DATABASE_URL=postgres://postgres:password@db:5432/db?sslmode=disable
     volumes:
       - .:/api
     ports:

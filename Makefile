@@ -5,7 +5,7 @@ up:
 	docker compose -f compose.dev.yaml up
 
 exec:
-	docker exec -it app /bin/bash
+	docker exec -it app /bin/sh
 
 prod:
 	docker compose -f compose.yaml build
