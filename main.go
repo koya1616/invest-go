@@ -1,11 +1,9 @@
 package main
 
 import (
-	"database/sql"
+	"api/db"
 	"fmt"
-	_ "github.com/lib/pq"
 	"net/http"
-	"os"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -15,29 +13,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/", handler)
 
-	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	database, err := db.NewDB()
 	if err != nil {
 		panic(err)
 	}
-	defer db.Close()
+	defer database.Close()
 
-	err = db.Ping()
+	ts, err := database.GetTimeSeriesById(1)
 	if err != nil {
 		panic(err)
 	}
-
-	var id int
-	var code string
-	err = db.QueryRow("SELECT id, code FROM timeseries WHERE id = $1", 1).Scan(&id, &code)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			fmt.Println("レコードが見つかりません")
-			return
-		}
-		panic(err)
+	if ts == nil {
+		fmt.Println("レコードが見つかりません")
+		return
 	}
 
-	fmt.Printf("ID: %d, Code: %s\n", id, code)
+	fmt.Printf("ID: %d, Code: %s\n", ts.ID, ts.Code)
 
 	fmt.Println("Server starting on port http://localhost:7778")
 	if err := http.ListenAndServe(":7778", nil); err != nil {
