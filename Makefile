@@ -8,7 +8,4 @@ exec:
 	docker exec -it app /bin/sh
 
 prod:
-	docker compose -f compose.yaml build
-
-tag:
-	docker tag invest-go-app:latest kuuuuya/invest-go:latest && docker push kuuuuya/invest-go:latest
+	docker compose -f compose.yaml build && docker tag invest-go-app:latest kuuuuya/invest-go:latest && docker push kuuuuya/invest-go:latest && sh deploy.sh
