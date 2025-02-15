@@ -1,0 +1,31 @@
+volumes:
+  postgres_data:
+
+services:
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    platform: linux/amd64
+    container_name: app
+    volumes:
+      - .:/api
+    ports:
+      - "7778:7778"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:17.3-alpine3.21
+    container_name: db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: db
+      TZ: Asia/Tokyo
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d

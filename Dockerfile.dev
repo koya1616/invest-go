@@ -1,0 +1,11 @@
+FROM golang:1.24.0-alpine
+
+WORKDIR /api
+
+# COPY go.mod go.sum ./
+COPY go.mod ./
+RUN go mod download && go mod verify
+
+COPY . ./
+
+CMD ["go", "run", "main.go"]
