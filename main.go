@@ -8,45 +8,62 @@ import (
 	"strings"
 )
 
-func fetchHTML() (string, error) {
+func fetchHTML() (string, string, error) {
 	resp, err := http.Get("https://finance.yahoo.co.jp/quote/7203.T")
 	if err != nil {
-		return "", fmt.Errorf("リクエスト実行エラー: %w", err)
+		return "", "", fmt.Errorf("リクエスト実行エラー: %w", err)
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("レスポンス読み取りエラー: %w", err)
+		return "", "", fmt.Errorf("レスポンス読み取りエラー: %w", err)
 	}
 	bodyStr := string(body)
-	startMarker := "window.__PRELOADED_STATE__ = "
-	endMarker := "</script>"
 
-	startIndex := strings.Index(bodyStr, startMarker)
-	if startIndex == -1 {
-			return "", fmt.Errorf("開始マーカーが見つかりません")
-	}
-	startIndex += len(startMarker)
-
-	endIndex := strings.Index(bodyStr[startIndex:], endMarker)
-	if endIndex == -1 {
-			return "", fmt.Errorf("終了マーカーが見つかりません")
+	priceBoard, err := searchHtmlData(bodyStr, "\"mainStocksPriceBoard\":", "otherExchanges")
+	if err != nil {
+		return "", "", fmt.Errorf("HTML内のデータ読み取りエラー: %w", err)
 	}
 
-	jsonData := bodyStr[startIndex : startIndex+endIndex]
-	return jsonData, nil
+	price, err := searchHtmlData(priceBoard, "\"price\":\"", "\",")
+	if err != nil {
+		return "", "", fmt.Errorf("priceデータの読み取りエラー: %w", err)
+	}
+
+	dateTime, err := searchHtmlData(priceBoard, "\"priceDateTime\":\"", "\",")
+	if err != nil {
+		return "", "", fmt.Errorf("priceDateTimeデータの読み取りエラー: %w", err)
+	}
+
+	return price, dateTime, nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	html, err := fetchHTML()
+	price, dateTime, err := fetchHTML()
 	if err != nil {
-		fmt.Printf("エラー: %v\n", err)
+		fmt.Printf("HTML取得エラー: %v\n", err)
 		return
 	}
-	fmt.Println(html)
+	fmt.Println(price)
+	fmt.Println(dateTime)
 
 	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
+}
+
+func searchHtmlData(str string, startMarker string, endMarker string) (string, error) {
+	startIndex := strings.Index(str, startMarker)
+	if startIndex == -1 {
+		return "", fmt.Errorf("開始マーカーが見つかりません")
+	}
+	startIndex += len(startMarker)
+
+	endIndex := strings.Index(str[startIndex:], endMarker)
+	if endIndex == -1 {
+		return "", fmt.Errorf("終了マーカーが見つかりません")
+	}
+
+	return str[startIndex : startIndex+endIndex], nil
 }
 
 func main() {
