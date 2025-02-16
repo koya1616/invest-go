@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func fetchHTML() (string, string, error) {
-	resp, err := http.Get("https://finance.yahoo.co.jp/quote/7203.T")
+func fetchHTML(code string) (string, string, error) {
+	resp, err := http.Get(fmt.Sprintf("https://finance.yahoo.co.jp/quote/%s.T", code))
 	if err != nil {
 		return "", "", fmt.Errorf("リクエスト実行エラー: %w", err)
 	}
@@ -40,7 +40,7 @@ func fetchHTML() (string, string, error) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	price, dateTime, err := fetchHTML()
+	price, dateTime, err := fetchHTML("7203")
 	if err != nil {
 		fmt.Printf("HTML取得エラー: %v\n", err)
 		return
