@@ -42,18 +42,6 @@ type TimeSeries struct {
 	Datetime time.Time
 }
 
-func (db *DB) GetTimeSeriesById(id int) (*TimeSeries, error) {
-	var ts TimeSeries
-	err := db.QueryRow("SELECT id, code FROM timeseries WHERE id = $1", id).Scan(&ts.ID, &ts.Code)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("error querying time series: %v", err)
-	}
-	return &ts, nil
-}
-
 func (db *DB) InsertTimeSeries(code string, value string, date string) error {
 	var ts TimeSeries
 	err := db.QueryRow(
