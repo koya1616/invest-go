@@ -54,7 +54,7 @@ func (db *DB) GetTimeSeriesById(id int) (*TimeSeries, error) {
 	return &ts, nil
 }
 
-func (db *DB) InsertTimeSeries(code string, value string, date string) (*TimeSeries, error) {
+func (db *DB) InsertTimeSeries(code string, value string, date string) error {
 	var ts TimeSeries
 	err := db.QueryRow(
 		"INSERT INTO timeseries (code, value, datetime) VALUES ($1, $2, $3) RETURNING id, code",
@@ -62,8 +62,8 @@ func (db *DB) InsertTimeSeries(code string, value string, date string) (*TimeSer
 	).Scan(&ts.ID, &ts.Code)
 
 	if err != nil {
-		return nil, fmt.Errorf("error inserting time series: %v", err)
+		return fmt.Errorf("error inserting time series: %v", err)
 	}
 
-	return &ts, nil
+	return nil
 }
