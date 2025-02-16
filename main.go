@@ -40,10 +40,6 @@ func fetchHTML(code string) (string, string, error) {
 	return strings.ReplaceAll(price, ",", ""), dateTime, nil
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
-}
-
 func searchHtmlData(str string, startMarker string, endMarker string) (string, error) {
 	startIndex := strings.Index(str, startMarker)
 	if startIndex == -1 {
@@ -60,8 +56,7 @@ func searchHtmlData(str string, startMarker string, endMarker string) (string, e
 }
 
 func isWithinTimeRange(now time.Time, start int, end int) bool {
-	jstTime := now.In(time.FixedZone("Asia/Tokyo", 9*60*60))
-	currentMinutes := jstTime.Hour()*60 + jstTime.Minute()
+	currentMinutes := now.Hour()*60 + now.Minute()
 	return currentMinutes >= start && currentMinutes <= end
 }
 
@@ -75,13 +70,14 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				price, dateTime, err := fetchHTML("7203")
-				if err != nil {
-					fmt.Printf("HTML取得エラー: %v\n", err)
-				}
-
-				now := time.Now()
+				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
 				if isWithinTimeRange(now, 540, 690) || isWithinTimeRange(now, 750, 930) {
+					price, dateTime, err := fetchHTML("7203")
+					if err != nil {
+						fmt.Printf("HTML取得エラー: %v\n", err)
+					}
+
+					fmt.Println(now.Format("2006-01-02 15:04"), price, dateTime)
 					if strings.Contains(dateTime, "/") {
 						if err := db.Instance.InsertTimeSeries("7203", price, fmt.Sprintf("%d/%s 15:30", now.Year(), dateTime)); err != nil {
 							fmt.Printf("データ挿入エラー: %v\n", err)
@@ -96,8 +92,6 @@ func main() {
 		}
 	}()
 
-	http.HandleFunc("/", handler)
-	fmt.Println("Server starting on port http://localhost:7778")
 	if err := http.ListenAndServe(":7778", nil); err != nil {
 		fmt.Printf("Server error: %v\n", err)
 	}
