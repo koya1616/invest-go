@@ -63,7 +63,7 @@ func isWithinTimeRange(now time.Time, start int, end int) bool {
 func main() {
 	defer db.Close()
 
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	go func() {
@@ -71,22 +71,29 @@ func main() {
 			select {
 			case <-ticker.C:
 				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
-				if isWithinTimeRange(now, 540, 690) || isWithinTimeRange(now, 750, 930) {
-					price, dateTime, err := fetchHTML("7203")
-					if err != nil {
-						fmt.Printf("HTML取得エラー: %v\n", err)
-					}
+				if !isWithinTimeRange(now, 540, 690) && !isWithinTimeRange(now, 750, 930) {
+					continue
+				}
 
-					fmt.Println(now.Format("2006-01-02 15:04"), price, dateTime)
-					if strings.Contains(dateTime, "/") {
-						if err := db.Instance.InsertTimeSeries("7203", price, fmt.Sprintf("%d/%s 15:30", now.Year(), dateTime)); err != nil {
-							fmt.Printf("データ挿入エラー: %v\n", err)
-						}
-					} else {
-						if err := db.Instance.InsertTimeSeries("7203", price, fmt.Sprintf("%s %s", now.Format("2006/01/02"), dateTime)); err != nil {
-							fmt.Printf("データ挿入エラー: %v\n", err)
-						}
-					}
+				code := "7203"
+				price, dateTime, err := fetchHTML(code)
+				if err != nil {
+					fmt.Printf("HTML取得エラー: %v\n", err)
+					continue
+				}
+
+				fmt.Println(now.Format("2006-01-02 15:04"), price, dateTime)
+
+				var formattedDateTime string
+				if strings.Contains(dateTime, "/") {
+					formattedDateTime = fmt.Sprintf("%d/%s 15:30", now.Year(), dateTime)
+				} else {
+					formattedDateTime = fmt.Sprintf("%s %s", now.Format("2006/01/02"), dateTime)
+				}
+
+				if err := db.Instance.InsertTimeSeries(code, price, formattedDateTime); err != nil {
+					fmt.Printf("データ挿入エラー: %v\n", err)
+					continue
 				}
 			}
 		}
