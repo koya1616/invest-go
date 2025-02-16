@@ -41,14 +41,6 @@ func fetchHTML(code string) (string, string, error) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	price, dateTime, err := fetchHTML("7203")
-	if err != nil {
-		fmt.Printf("HTML取得エラー: %v\n", err)
-		return
-	}
-	fmt.Println(price)
-	fmt.Println(dateTime)
-
 	fmt.Fprintf(w, "Hello, %s!", r.URL.Path[1:])
 }
 
@@ -70,7 +62,7 @@ func searchHtmlData(str string, startMarker string, endMarker string) (string, e
 func isWithinTimeRange(now time.Time, start int, end int) bool {
 	jstTime := now.In(time.FixedZone("Asia/Tokyo", 9*60*60))
 	currentMinutes := jstTime.Hour()*60 + jstTime.Minute()
-	return currentMinutes >= 750 && currentMinutes <= 930
+	return currentMinutes >= start && currentMinutes <= end
 }
 
 func main() {
