@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 func fetchHTML(code string) (string, string, error) {
@@ -79,6 +80,18 @@ func main() {
 	}
 
 	fmt.Printf("ID: %d, Code: %s\n", ts.ID, ts.Code)
+
+	ticker := time.NewTicker(1 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				fmt.Println("Cron job running at:", time.Now())
+			}
+		}
+	}()
 
 	http.HandleFunc("/", handler)
 	fmt.Println("Server starting on port http://localhost:7778")
