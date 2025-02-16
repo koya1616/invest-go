@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 	"log"
 	"os"
+	"time"
 )
 
 var Instance *DB
@@ -35,8 +36,10 @@ func Close() error {
 }
 
 type TimeSeries struct {
-	ID   int
-	Code string
+	ID       int
+	Code     string
+	Value    float64
+	Datetime time.Time
 }
 
 func (db *DB) GetTimeSeriesById(id int) (*TimeSeries, error) {
@@ -48,5 +51,19 @@ func (db *DB) GetTimeSeriesById(id int) (*TimeSeries, error) {
 		}
 		return nil, fmt.Errorf("error querying time series: %v", err)
 	}
+	return &ts, nil
+}
+
+func (db *DB) InsertTimeSeries(code string, value string, date string) (*TimeSeries, error) {
+	var ts TimeSeries
+	err := db.QueryRow(
+		"INSERT INTO timeseries (code, value, datetime) VALUES ($1, $2, $3) RETURNING id, code",
+		code, value, date,
+	).Scan(&ts.ID, &ts.Code)
+
+	if err != nil {
+		return nil, fmt.Errorf("error inserting time series: %v", err)
+	}
+
 	return &ts, nil
 }

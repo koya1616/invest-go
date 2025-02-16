@@ -70,17 +70,6 @@ func searchHtmlData(str string, startMarker string, endMarker string) (string, e
 func main() {
 	defer db.Close()
 
-	ts, err := db.Instance.GetTimeSeriesById(1)
-	if err != nil {
-		panic(err)
-	}
-	if ts == nil {
-		fmt.Println("レコードが見つかりません")
-		return
-	}
-
-	fmt.Printf("ID: %d, Code: %s\n", ts.ID, ts.Code)
-
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
