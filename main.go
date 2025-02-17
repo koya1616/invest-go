@@ -74,7 +74,7 @@ func main() {
 				if now.Second() >= 2 && now.Second() <= 57 {
 					continue
 				}
-				if !isWithinTimeRange(now, 540, 690) && !isWithinTimeRange(now, 750, 930) {
+				if !isWithinTimeRange(now, 540, 1020) {
 					continue
 				}
 
