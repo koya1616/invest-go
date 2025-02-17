@@ -122,7 +122,7 @@ func (db *DB) DeleteDuplicatedTimeSeries(table string) error {
 	return nil
 }
 
-func (db *DB) DeleteOldOneMinuteTimeSeries(table string) error {
+func (db *DB) DeleteOldTimeSeries(table string) error {
 	query := fmt.Sprintf(`
 		DELETE FROM %s
 		WHERE datetime < CURRENT_DATE;

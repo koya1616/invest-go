@@ -76,10 +76,10 @@ func main() {
 				}
 				if !isWithinTimeRange(now, 540, 1020) {
 					if isWithinTimeRange(now, 538, 539) {
-						if err := db.Instance.DeleteOldOneMinuteTimeSeries("one_minute_timeseries"); err != nil {
+						if err := db.Instance.DeleteOldTimeSeries("one_minute_timeseries"); err != nil {
 							fmt.Printf("1分足テーブルの今日以前のrecord削除エラー: %v\n", err)
 						}
-						if err := db.Instance.DeleteOldOneMinuteTimeSeries("timeseries"); err != nil {
+						if err := db.Instance.DeleteOldTimeSeries("timeseries"); err != nil {
 							fmt.Printf("timeseriesテーブルの今日以前のrecord削除エラー: %v\n", err)
 						}
 					}
