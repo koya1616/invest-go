@@ -55,3 +55,42 @@ func (db *DB) InsertTimeSeries(code string, value string, date string) error {
 
 	return nil
 }
+
+func (db *DB) InsertOneMinuteTimeSeries() error {
+	query := `
+		INSERT INTO one_minute_timeseries (code, value, datetime)
+		WITH latest_records AS (
+			SELECT code, datetime, MAX(id) as latest_id
+			FROM timeseries
+			GROUP BY code, datetime
+		)
+		SELECT t.code, t.value, t.datetime
+		FROM timeseries t
+		INNER JOIN latest_records l ON t.id = l.latest_id;
+	`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error executing query to insert into one_minute_timeseries: %v", err)
+	}
+
+	return nil
+}
+
+func (db *DB) DeleteOneMinuteTimeSeries() error {
+	query := `
+		DELETE FROM one_minute_timeseries
+		WHERE id NOT IN (
+			SELECT MAX(id)
+			FROM one_minute_timeseries
+			GROUP BY code, datetime
+		);
+	`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error executing query to delete from one_minute_timeseries: %v", err)
+	}
+
+	return nil
+}
