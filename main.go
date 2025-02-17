@@ -63,7 +63,7 @@ func isWithinTimeRange(now time.Time, start int, end int) bool {
 func main() {
 	defer db.Close()
 
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	go func() {
@@ -71,6 +71,9 @@ func main() {
 			select {
 			case <-ticker.C:
 				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
+				if now.Minute() != 59 || now.Minute() != 58 || now.Minute() != 00 {
+					continue
+				}
 				if !isWithinTimeRange(now, 540, 690) && !isWithinTimeRange(now, 750, 930) {
 					continue
 				}
