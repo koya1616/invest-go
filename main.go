@@ -71,7 +71,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
-				if now.Second() != 59 && now.Second() != 58 && now.Second() != 00 {
+				if now.Second() != 59 && now.Second() != 58 && now.Second() != 00 && now.Second() != 1 {
 					continue
 				}
 				if !isWithinTimeRange(now, 540, 690) && !isWithinTimeRange(now, 750, 930) {
