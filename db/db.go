@@ -77,7 +77,7 @@ func (db *DB) InsertOneMinuteTimeSeries() error {
 	return nil
 }
 
-func (db *DB) DeleteDepulicatedOneMinuteTimeSeries() error {
+func (db *DB) DeleteDuplicatedOneMinuteTimeSeries() error {
 	query := `
 		DELETE FROM one_minute_timeseries
 		WHERE id NOT IN (
