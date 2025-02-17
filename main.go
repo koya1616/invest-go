@@ -71,7 +71,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
-				if now.Minute() != 59 || now.Minute() != 58 || now.Minute() != 00 {
+				if now.Second() != 59 && now.Second() != 58 && now.Second() != 00 {
 					continue
 				}
 				if !isWithinTimeRange(now, 540, 690) && !isWithinTimeRange(now, 750, 930) {
@@ -85,7 +85,7 @@ func main() {
 					continue
 				}
 
-				fmt.Println(now.Format("2006-01-02 15:04"), price, dateTime)
+				fmt.Println(now.Format("2006-01-02 15:04:05"), price, dateTime)
 
 				var formattedDateTime string
 				if strings.Contains(dateTime, "/") {
