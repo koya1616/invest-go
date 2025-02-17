@@ -94,3 +94,17 @@ func (db *DB) DeleteDuplicatedOneMinuteTimeSeries() error {
 
 	return nil
 }
+
+func (db *DB) DeleteOldOneMinuteTimeSeries(table string) error {
+	query := fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE datetime < CURRENT_DATE;
+	`, table)
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error executing query to delete old %s records: %v", table, err)
+	}
+
+	return nil
+}
