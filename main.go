@@ -2,6 +2,7 @@ package main
 
 import (
 	"api/db"
+	"api/utils"
 	"fmt"
 	"io"
 	"net/http"
@@ -55,11 +56,6 @@ func searchHtmlData(str string, startMarker string, endMarker string) (string, e
 	return str[startIndex : startIndex+endIndex], nil
 }
 
-func isWithinTimeRange(now time.Time, start int, end int) bool {
-	currentMinutes := now.Hour()*60 + now.Minute()
-	return currentMinutes >= start && currentMinutes <= end
-}
-
 func main() {
 	defer db.Close()
 
@@ -74,8 +70,8 @@ func main() {
 				if now.Second() >= 3 && now.Second() <= 58 {
 					continue
 				}
-				if !isWithinTimeRange(now, 540, 1020) {
-					if isWithinTimeRange(now, 538, 539) {
+				if !utils.IsWithinTimeRange(now, 540, 1020) {
+					if utils.IsWithinTimeRange(now, 538, 539) {
 						if err := db.Instance.DeleteOldTimeSeries("five_minutes_timeseries"); err != nil {
 							fmt.Printf("5分足テーブルの今日以前のrecord削除エラー: %v\n", err)
 						}
