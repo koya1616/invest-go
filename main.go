@@ -71,7 +71,7 @@ func main() {
 			select {
 			case <-ticker.C:
 				now := time.Now().In(time.FixedZone("Asia/Tokyo", 9*60*60))
-				if now.Second() >= 2 && now.Second() <= 57 {
+				if now.Second() >= 3 && now.Second() <= 58 {
 					continue
 				}
 				if !isWithinTimeRange(now, 540, 1020) {
@@ -96,6 +96,20 @@ func main() {
 
 				if err := db.Instance.InsertTimeSeries(code, price, formattedDateTime); err != nil {
 					fmt.Printf("データ挿入エラー: %v\n", err)
+					continue
+				}
+
+				if now.Second() != 2 {
+					continue
+				}
+
+				if err := db.Instance.InsertOneMinuteTimeSeries(); err != nil {
+					fmt.Printf("1分足の集計エラー: %v\n", err)
+					continue
+				}
+
+				if err := db.Instance.DeleteDuplicatedOneMinuteTimeSeries(); err != nil {
+					fmt.Printf("1分足の重複削除エラー: %v\n", err)
 					continue
 				}
 			}
