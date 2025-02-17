@@ -77,19 +77,46 @@ func (db *DB) InsertOneMinuteTimeSeries() error {
 	return nil
 }
 
-func (db *DB) DeleteDuplicatedOneMinuteTimeSeries() error {
+func (db *DB) InsertFiveMinutesTimeSeries() error {
 	query := `
-		DELETE FROM one_minute_timeseries
-		WHERE id NOT IN (
-			SELECT MAX(id)
+		WITH five_minutes_groups AS (
+			SELECT
+				code,
+				date_trunc('hour', datetime) + INTERVAL '5 minutes' * (date_part('minute', datetime)::integer / 5) AS five_min_datetime,
+				MAX(id) as max_id
 			FROM one_minute_timeseries
-			GROUP BY code, datetime
-		);
+			GROUP BY
+				code,
+				date_trunc('hour', datetime) + INTERVAL '5 minutes' * (date_part('minute', datetime)::integer / 5)
+		)
+		INSERT INTO five_minutes_timeseries (code, value, datetime)
+		SELECT g.code, t.value, g.five_min_datetime
+		FROM five_minutes_groups g
+		JOIN one_minute_timeseries t ON t.id = g.max_id
+		ORDER BY g.five_min_datetime;
 	`
 
 	_, err := db.Exec(query)
 	if err != nil {
-		return fmt.Errorf("error executing query to delete from one_minute_timeseries: %v", err)
+		return fmt.Errorf("error executing query to insert into five_minutes_timeseries: %v", err)
+	}
+
+	return nil
+}
+
+func (db *DB) DeleteDuplicatedTimeSeries(table string) error {
+	query := fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id NOT IN (
+			SELECT MAX(id)
+			FROM %s
+			GROUP BY code, datetime
+		);
+	`, table, table)
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error executing query to delete from %s: %v", table, err)
 	}
 
 	return nil

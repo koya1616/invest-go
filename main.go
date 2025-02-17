@@ -113,12 +113,18 @@ func main() {
 
 				if err := db.Instance.InsertOneMinuteTimeSeries(); err != nil {
 					fmt.Printf("1分足の集計エラー: %v\n", err)
-					continue
 				}
 
-				if err := db.Instance.DeleteDuplicatedOneMinuteTimeSeries(); err != nil {
+				if err := db.Instance.DeleteDuplicatedTimeSeries("one_minute_timeseries"); err != nil {
 					fmt.Printf("1分足の重複削除エラー: %v\n", err)
-					continue
+				}
+
+				if err := db.Instance.InsertFiveMinutesTimeSeries(); err != nil {
+					fmt.Printf("5分足の集計エラー: %v\n", err)
+				}
+
+				if err := db.Instance.DeleteDuplicatedTimeSeries("five_minutes_timeseries"); err != nil {
+					fmt.Printf("5分足の重複削除エラー: %v\n", err)
 				}
 			}
 		}
