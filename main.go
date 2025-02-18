@@ -3,6 +3,7 @@ package main
 import (
 	"api/db"
 	"api/utils"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -20,6 +21,18 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("timeseriesテーブルの今日以前のrecord削除エラー: %v\n", err)
 	}
 	fmt.Fprint(w, "OK")
+}
+
+func getToken(w http.ResponseWriter, r *http.Request) {
+	type Response struct {
+		Token string `json:"token"`
+	}
+	response := Response{Token: "example-token-123"}
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func main() {
@@ -85,6 +98,7 @@ func main() {
 	}()
 
 	http.HandleFunc("/delete", handleDelete)
+	http.HandleFunc("/token", getToken)
 	if err := http.ListenAndServe(":7778", nil); err != nil {
 		fmt.Printf("Server error: %v\n", err)
 	}
