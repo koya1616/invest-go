@@ -24,10 +24,16 @@ func handleDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func getToken(w http.ResponseWriter, r *http.Request) {
+	token, err := utils.FetchToken("7203")
+	if err != nil {
+		http.Error(w, "Failed to fetch token", http.StatusInternalServerError)
+		return
+	}
+
 	type Response struct {
 		Token string `json:"token"`
 	}
-	response := Response{Token: "example-token-123"}
+	response := Response{Token: token}
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Failed to encode response", http.StatusInternalServerError)

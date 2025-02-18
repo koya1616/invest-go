@@ -52,3 +52,24 @@ func FetchHTML(code string) (string, string, error) {
 
 	return strings.ReplaceAll(price, ",", ""), dateTime, nil
 }
+
+func FetchToken(code string) (string, error) {
+	resp, err := http.Get(fmt.Sprintf("https://finance.yahoo.co.jp/quote/%s.T", code))
+	if err != nil {
+		return "", fmt.Errorf("リクエスト実行エラー: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("レスポンス読み取りエラー: %w", err)
+	}
+	bodyStr := string(body)
+
+	token, err := searchHtmlData(bodyStr, "\"stocksJwtToken\":\"", "\",")
+	if err != nil {
+		return "", fmt.Errorf("HTML内のデータ読み取りエラー: %w", err)
+	}
+
+	return token, nil
+}
