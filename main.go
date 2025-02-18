@@ -9,6 +9,19 @@ import (
 	"time"
 )
 
+func handleDelete(w http.ResponseWriter, r *http.Request) {
+	if err := db.Instance.DeleteOldTimeSeries("five_minutes_timeseries"); err != nil {
+		fmt.Printf("5分足テーブルの今日以前のrecord削除エラー: %v\n", err)
+	}
+	if err := db.Instance.DeleteOldTimeSeries("one_minute_timeseries"); err != nil {
+		fmt.Printf("1分足テーブルの今日以前のrecord削除エラー: %v\n", err)
+	}
+	if err := db.Instance.DeleteOldTimeSeries("timeseries"); err != nil {
+		fmt.Printf("timeseriesテーブルの今日以前のrecord削除エラー: %v\n", err)
+	}
+	fmt.Fprint(w, "OK")
+}
+
 func main() {
 	defer db.Close()
 
@@ -24,17 +37,6 @@ func main() {
 					continue
 				}
 				if !utils.IsWithinTimeRange(now, 540, 1020) {
-					if utils.IsWithinTimeRange(now, 538, 539) {
-						if err := db.Instance.DeleteOldTimeSeries("five_minutes_timeseries"); err != nil {
-							fmt.Printf("5分足テーブルの今日以前のrecord削除エラー: %v\n", err)
-						}
-						if err := db.Instance.DeleteOldTimeSeries("one_minute_timeseries"); err != nil {
-							fmt.Printf("1分足テーブルの今日以前のrecord削除エラー: %v\n", err)
-						}
-						if err := db.Instance.DeleteOldTimeSeries("timeseries"); err != nil {
-							fmt.Printf("timeseriesテーブルの今日以前のrecord削除エラー: %v\n", err)
-						}
-					}
 					continue
 				}
 
@@ -82,6 +84,7 @@ func main() {
 		}
 	}()
 
+	http.HandleFunc("/delete", handleDelete)
 	if err := http.ListenAndServe(":7778", nil); err != nil {
 		fmt.Printf("Server error: %v\n", err)
 	}
