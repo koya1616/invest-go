@@ -11,6 +11,7 @@ import (
 )
 
 func handleDelete(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Delete request received")
 	if err := db.Instance.DeleteOldTimeSeries("five_minutes_timeseries"); err != nil {
 		fmt.Printf("5分足テーブルの今日以前のrecord削除エラー: %v\n", err)
 	}
